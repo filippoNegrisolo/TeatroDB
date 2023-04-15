@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using TeatroDB.Data;
+
 namespace TeatroDB
 {
     public class Program
@@ -8,7 +11,17 @@ namespace TeatroDB
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var serverVersion = ServerVersion.AutoDetect(connectionString);
+            builder.Services.AddDbContext<AppDbContext>(
+                dbContextOptions => dbContextOptions
+                .UseMySql(connectionString, serverVersion)
+                // The following three options help with debugging, but should
+                // be changed or removed for production.
+                .LogTo(Console.WriteLine, LogLevel.Information)
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors()
+            );
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
